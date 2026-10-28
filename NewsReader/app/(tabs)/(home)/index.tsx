@@ -16,7 +16,7 @@ export default function ArticleList() {
 
     const handlePress = (article: Article) => {
         router.push({
-            pathname: "/(home)/[id]",
+            pathname: "/(tabs)/(home)/[id]",
             params: { id: article.id },
         });
     };
