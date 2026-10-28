@@ -23,7 +23,7 @@ function showAlert(title: string, message: string) {
 }
 
 export default function AddStudentForm() {
-    const { dispatch } = useStudents();
+    const { dispatch, students } = useStudents();
 
     const [name, setName] = useState("");
     const [studentId, setStudentId] = useState("");
@@ -31,8 +31,13 @@ export default function AddStudentForm() {
     const [bio, setBio] = useState("");
     const [skills, setSkills] = useState("");
     const [loading, setLoading] = useState(false);
+    // Feature 3 — inline error for duplicate student ID
+    const [studentIdError, setStudentIdError] = useState("");
 
     const handleSubmit = () => {
+        // Reset previous ID error
+        setStudentIdError("");
+
         if (
             !name.trim() ||
             !studentId.trim() ||
@@ -41,6 +46,15 @@ export default function AddStudentForm() {
             !skills.trim()
         ) {
             showAlert("Missing Information", "Please fill in all fields.");
+            return;
+        }
+
+        // Feature 3 — block duplicate student IDs
+        const isDuplicate = students.some(
+            (s) => s.studentId === studentId.trim()
+        );
+        if (isDuplicate) {
+            setStudentIdError("Student ID already exists");
             return;
         }
 
@@ -82,11 +96,19 @@ export default function AddStudentForm() {
 
             <Text style={styles.label}>Student ID</Text>
             <TextInput
-                style={styles.input}
+                style={[styles.input, studentIdError ? styles.inputError : null]}
                 placeholder="e.g. 23-12345-1"
                 value={studentId}
-                onChangeText={setStudentId}
+                onChangeText={(text) => {
+                    setStudentId(text);
+                    // Clear error when user starts typing again
+                    if (studentIdError) setStudentIdError("");
+                }}
             />
+            {/* Feature 3 — show duplicate ID error inline */}
+            {studentIdError ? (
+                <Text style={styles.errorText}>{studentIdError}</Text>
+            ) : null}
 
             <Text style={styles.label}>Department</Text>
             <TextInput
@@ -169,7 +191,17 @@ const styles = StyleSheet.create({
         paddingHorizontal: 14,
         paddingVertical: 12,
         fontSize: 15,
-        marginBottom: 16,
+        marginBottom: 4,
+    },
+    inputError: {
+        borderColor: "#EF4444",
+        marginBottom: 4,
+    },
+    errorText: {
+        color: "#EF4444",
+        fontSize: 12,
+        marginBottom: 12,
+        marginLeft: 4,
     },
     bioInput: {
         minHeight: 90,
@@ -178,7 +210,7 @@ const styles = StyleSheet.create({
     hint: {
         color: "#64748B",
         fontSize: 12,
-        marginTop: -10,
+        marginTop: 2,
         marginBottom: 18,
     },
     button: {
