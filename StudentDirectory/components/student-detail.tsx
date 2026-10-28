@@ -1,27 +1,55 @@
-// components/student-detail.tsx
-
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, ScrollView, StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Student } from "../data/students";
+import { useStudents } from "@/context/students-context";
 
 interface StudentDetailProps {
     student: Student;
 }
 
 export default function StudentDetail({ student }: StudentDetailProps) {
+    const { dispatch } = useStudents();
+
+    const handleRemove = () => {
+        if (Platform.OS === "web") {
+            // Alert.alert does not work on web — use browser confirm dialog
+            const confirmed = window.confirm(
+                `Remove ${student.name} from the directory?`
+            );
+            if (confirmed) {
+                dispatch({ type: "REMOVE_STUDENT", payload: student.id });
+            }
+        } else {
+            Alert.alert(
+                "Remove Student",
+                `Are you sure you want to remove ${student.name}?`,
+                [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                        text: "Remove",
+                        style: "destructive",
+                        onPress: () => {
+                            dispatch({
+                                type: "REMOVE_STUDENT",
+                                payload: student.id,
+                            });
+                        },
+                    },
+                ]
+            );
+        }
+    };
+
     return (
-        <View style={styles.card}>
-            {/* Header row: name + department */}
+        <ScrollView style={styles.cardWrapper} contentContainerStyle={styles.card}>
             <Text style={styles.name}>{student.name}</Text>
             <Text style={styles.department}>{student.department}</Text>
             <Text style={styles.idBadge}>ID: {student.studentId}</Text>
 
             <View style={styles.divider} />
 
-            {/* Bio */}
             <Text style={styles.sectionLabel}>About</Text>
             <Text style={styles.bio}>{student.bio}</Text>
 
-            {/* Skills */}
             <Text style={styles.sectionLabel}>Skills</Text>
             <View style={styles.skillsRow}>
                 {student.skills.map((skill, index) => (
@@ -30,14 +58,24 @@ export default function StudentDetail({ student }: StudentDetailProps) {
                     </View>
                 ))}
             </View>
-        </View>
+
+            <TouchableOpacity
+                style={styles.removeButton}
+                onPress={handleRemove}
+            >
+                <Text style={styles.removeButtonText}>Remove Student</Text>
+            </TouchableOpacity>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     card: {
-        margin: 12,
         padding: 20,
+    },
+    cardWrapper: {
+        margin: 12,
+        maxHeight: 320,
         backgroundColor: "#FFFFFF",
         borderRadius: 14,
         elevation: 3,
@@ -104,5 +142,17 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: "#1D4ED8",
         fontWeight: "500",
+    },
+    removeButton: {
+        backgroundColor: "#DC2626",
+        padding: 12,
+        borderRadius: 8,
+        alignItems: "center",
+        marginTop: 20,
+    },
+    removeButtonText: {
+        color: "#FFFFFF",
+        fontSize: 14,
+        fontWeight: "bold",
     },
 });
