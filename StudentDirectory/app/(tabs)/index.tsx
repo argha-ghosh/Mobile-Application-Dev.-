@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import StudentItem from "@/components/student-item";
 import { Student } from "@/data/students";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,7 +9,7 @@ import { useStudents } from "@/context/students-context";
 import { router } from "expo-router";
 
 export default function HomeScreen() {
-    const { students } = useStudents();
+    const { students, dispatch } = useStudents();
 
     const [query, setQuery] = useState<string>("");
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -27,6 +27,30 @@ export default function HomeScreen() {
         );
     };
 
+    const handleReset = () => {
+        if (Platform.OS === "web") {
+            const confirmed = window.confirm(
+                "Reset Directory\n\nThis will remove all added students and restore the original list."
+            );
+            if (confirmed) {
+                dispatch({ type: "RESET" });
+            }
+        } else {
+            Alert.alert(
+                "Reset Directory",
+                "This will remove all added students and restore the original list.",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                        text: "Reset",
+                        style: "destructive",
+                        onPress: () => dispatch({ type: "RESET" }),
+                    },
+                ]
+            );
+        }
+    };
+
     const filtered = students.filter((s) => {
         return (
             s.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -41,17 +65,24 @@ export default function HomeScreen() {
                 <Text style={styles.title}>
                     Student Directory ({students.length})
                 </Text>
-                <Pressable
-                    style={styles.addButton}
-                    onPress={() => router.push("/add-student")}
-                >
-                    <Text style={styles.addButtonText}>+ Add</Text>
-                </Pressable>
+                <View style={styles.titleActions}>
+                    <Pressable
+                        style={styles.resetButton}
+                        onPress={handleReset}
+                    >
+                        <Text style={styles.resetButtonText}>Reset</Text>
+                    </Pressable>
+                    <Pressable
+                        style={styles.addButton}
+                        onPress={() => router.push("/(tabs)/add-student")}
+                    >
+                        <Text style={styles.addButtonText}>+ Add</Text>
+                    </Pressable>
+                </View>
             </View>
 
             <SearchBar value={query} onChangeText={setQuery} />
 
-            {/* List takes remaining space; shrinks when detail card is shown */}
             <View style={styles.listContainer}>
                 <FlatList
                     data={filtered}
@@ -73,7 +104,6 @@ export default function HomeScreen() {
                 />
             </View>
 
-            {/* Detail card — rendered below the list, always visible */}
             {selectedStudent && (
                 <StudentDetail student={selectedStudent} />
             )}
@@ -95,9 +125,25 @@ const styles = StyleSheet.create({
         backgroundColor: "#0D1F4E",
     },
     title: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: "bold",
         color: "#FFFFFF",
+        flexShrink: 1,
+    },
+    titleActions: {
+        flexDirection: "row",
+        gap: 8,
+    },
+    resetButton: {
+        backgroundColor: "#7F1D1D",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+    },
+    resetButtonText: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        fontSize: 13,
     },
     addButton: {
         backgroundColor: "#0D9488",

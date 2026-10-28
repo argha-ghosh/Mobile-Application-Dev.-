@@ -1,4 +1,3 @@
-
 import { Tabs } from 'expo-router';
 import React from 'react';
 
@@ -37,7 +36,17 @@ export default function TabLayout() {
         }}
       />
 
-
+      <Tabs.Screen
+        name="add-student"
+        options={{
+          title: "Add Student",
+          href: null,
+          headerShown: true,
+          headerTitle: "Join the Directory",
+          headerStyle: { backgroundColor: "#0D1F4E" },
+          headerTintColor: "#FFFFFF",
+        }}
+      />
     </Tabs>
   );
 }
