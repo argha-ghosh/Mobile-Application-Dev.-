@@ -97,7 +97,7 @@ export default function HomeScreen() {
                     ListEmptyComponent={
                         <View style={styles.empty}>
                             <Text style={styles.emptyText}>
-                                No students match "{query}"
+                                No students match &quot;{query}&quot;
                             </Text>
                         </View>
                     }
