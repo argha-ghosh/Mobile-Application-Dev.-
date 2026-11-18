@@ -2,9 +2,10 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useBookmarks } from "../../../context/bookmark-context";
 import { ARTICLES } from "../../../data/articles";
 
 type ArticleParams = { id: string };
@@ -25,8 +26,9 @@ export default function ArticleDetail() {
 
     const article = ARTICLES.find((a) => a.id === id);
 
-    // Exercise 2: bookmark toggle state
-    const [bookmarked, setBookmarked] = useState(false);
+    // Bookmark state from global context
+    const { isBookmarked, toggleBookmark } = useBookmarks();
+    const bookmarked = article ? isBookmarked(article.id) : false;
 
     // Update header title + bookmark button whenever article or bookmarked state changes
     useEffect(() => {
@@ -36,7 +38,7 @@ export default function ArticleDetail() {
                 // Exercise 2: bookmark icon button in the header
                 headerRight: () => (
                     <Pressable
-                        onPress={() => setBookmarked((prev) => !prev)}
+                        onPress={() => article && toggleBookmark(article.id)}
                         style={styles.headerButton}
                         hitSlop={8}
                     >
